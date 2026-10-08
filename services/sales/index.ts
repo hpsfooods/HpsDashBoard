@@ -61,7 +61,7 @@ export function calculateSaleTotals<
   const totalAmount = Number(
     Math.max(
       0,
-      subtotal + iceChgs + rlyCharges + cvrCharges + boxCharges + pkgCharges + tax - discount
+      subtotal + tax - discount
     ).toFixed(2)
   );
   const paid = Number((paidAmount || 0).toFixed(2));
@@ -817,7 +817,7 @@ export async function updateSale(
         totalAmount = Number(
           Math.max(
             0,
-            subtotal + iceCharges + railwayCharges + coverRopeCharges + thermocolBoxCharges + packingCharges + taxAmount - discountAmount
+            subtotal + taxAmount - discountAmount
           ).toFixed(2)
         );
         balanceAmount = Number(Math.max(0, totalAmount - existing.paidAmount).toFixed(2));

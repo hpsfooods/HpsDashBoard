@@ -239,7 +239,7 @@ export function SalesForm({ customers, fishTypes, initialData }: SalesFormProps)
   );
   const totalCharges =
     iceCharges + railwayCharges + coverRopeCharges + thermocolBoxCharges + packingCharges;
-  const grandTotal = Math.max(0, subtotal + totalCharges + taxAmount - discountAmount);
+  const grandTotal = Math.max(0, subtotal + taxAmount - discountAmount);
   const dueAmount = isEditMode
     ? Math.max(0, grandTotal - (initialData?.paidAmount ?? 0))
     : Math.max(0, grandTotal - initialPaidAmount);
@@ -974,7 +974,7 @@ export function SalesForm({ customers, fishTypes, initialData }: SalesFormProps)
               </div>
 
               <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/60">
-                These charges are added to the sale invoice and automatically recorded as operational expenses.
+                These are handling &amp; delivery expenses for this sale (borne by seller). They are automatically recorded as operational expenses to deduct from sales revenue.
               </p>
             </CardContent>
           </Card>
@@ -1052,38 +1052,6 @@ export function SalesForm({ customers, fishTypes, initialData }: SalesFormProps)
                 <span className="font-mono">{formatCurrency(subtotal)}</span>
               </div>
 
-              {iceCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Ice Charges</span>
-                  <span className="font-mono">+{formatCurrency(iceCharges)}</span>
-                </div>
-              )}
-
-              {railwayCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Railway Charges</span>
-                  <span className="font-mono">+{formatCurrency(railwayCharges)}</span>
-                </div>
-              )}
-              {coverRopeCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Cover & Rope Charges</span>
-                  <span className="font-mono">+{formatCurrency(coverRopeCharges)}</span>
-                </div>
-              )}
-              {thermocolBoxCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Thermocol Box Charges</span>
-                  <span className="font-mono">+{formatCurrency(thermocolBoxCharges)}</span>
-                </div>
-              )}
-              {packingCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Packing Charges</span>
-                  <span className="font-mono">+{formatCurrency(packingCharges)}</span>
-                </div>
-              )}
-
               {taxAmount > 0 && (
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Tax</span>
@@ -1101,12 +1069,53 @@ export function SalesForm({ customers, fishTypes, initialData }: SalesFormProps)
 
               <div className="border-t border-border pt-2 mt-2">
                 <div className="flex justify-between text-sm font-bold">
-                  <span>Total Amount</span>
+                  <span>Customer Billed Total</span>
                   <span className="font-mono text-primary">
                     {formatCurrency(grandTotal)}
                   </span>
                 </div>
               </div>
+
+              {totalCharges > 0 && (
+                <div className="mt-3 pt-2 border-t border-dashed border-border/80 space-y-1">
+                  <div className="flex justify-between text-[11px] font-semibold text-muted-foreground">
+                    <span>Order Expenses (Borne by Seller)</span>
+                    <span className="font-mono text-amber-600 dark:text-amber-400">
+                      {formatCurrency(totalCharges)}
+                    </span>
+                  </div>
+                  {iceCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Ice Cost</span>
+                      <span className="font-mono">{formatCurrency(iceCharges)}</span>
+                    </div>
+                  )}
+                  {railwayCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Railway Freight</span>
+                      <span className="font-mono">{formatCurrency(railwayCharges)}</span>
+                    </div>
+                  )}
+                  {coverRopeCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Cover &amp; Rope</span>
+                      <span className="font-mono">{formatCurrency(coverRopeCharges)}</span>
+                    </div>
+                  )}
+                  {thermocolBoxCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Thermocol Box</span>
+                      <span className="font-mono">{formatCurrency(thermocolBoxCharges)}</span>
+                    </div>
+                  )}
+                  {packingCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Packing Cost</span>
+                      <span className="font-mono">{formatCurrency(packingCharges)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {(isEditMode ? (initialData?.paidAmount ?? 0) > 0 : initialPaidAmount > 0) && (
                 <>

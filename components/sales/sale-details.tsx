@@ -818,38 +818,6 @@ export function SaleDetails({ sale }: SaleDetailsProps) {
                 <span className="font-mono">{formatCurrency(sale.subtotal)}</span>
               </div>
 
-              {sale.iceCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Ice Charges</span>
-                  <span className="font-mono">+{formatCurrency(sale.iceCharges)}</span>
-                </div>
-              )}
-
-              {sale.railwayCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Railway Charges</span>
-                  <span className="font-mono">+{formatCurrency(sale.railwayCharges)}</span>
-                </div>
-              )}
-              {sale.coverRopeCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Cover & Rope Charges</span>
-                  <span className="font-mono">+{formatCurrency(sale.coverRopeCharges)}</span>
-                </div>
-              )}
-              {sale.thermocolBoxCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Thermocol Box Charges</span>
-                  <span className="font-mono">+{formatCurrency(sale.thermocolBoxCharges)}</span>
-                </div>
-              )}
-              {sale.packingCharges > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Packing Charges</span>
-                  <span className="font-mono">+{formatCurrency(sale.packingCharges)}</span>
-                </div>
-              )}
-
               {sale.taxAmount > 0 && (
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Tax</span>
@@ -867,12 +835,59 @@ export function SaleDetails({ sale }: SaleDetailsProps) {
 
               <div className="border-t border-border pt-2 mt-2">
                 <div className="flex justify-between text-sm font-bold">
-                  <span>Total Amount</span>
+                  <span>Customer Billed Total</span>
                   <span className="font-mono text-primary">
                     {formatCurrency(sale.totalAmount)}
                   </span>
                 </div>
               </div>
+
+              {((sale.iceCharges || 0) + (sale.railwayCharges || 0) + (sale.coverRopeCharges || 0) + (sale.thermocolBoxCharges || 0) + (sale.packingCharges || 0)) > 0 && (
+                <div className="mt-3 pt-2 border-t border-dashed border-border/80 space-y-1">
+                  <div className="flex justify-between text-[11px] font-semibold text-muted-foreground">
+                    <span>Order Expenses (Borne by Seller)</span>
+                    <span className="font-mono text-amber-600 dark:text-amber-400">
+                      {formatCurrency(
+                        (sale.iceCharges || 0) +
+                        (sale.railwayCharges || 0) +
+                        (sale.coverRopeCharges || 0) +
+                        (sale.thermocolBoxCharges || 0) +
+                        (sale.packingCharges || 0)
+                      )}
+                    </span>
+                  </div>
+                  {sale.iceCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Ice Cost</span>
+                      <span className="font-mono">{formatCurrency(sale.iceCharges)}</span>
+                    </div>
+                  )}
+                  {sale.railwayCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Railway Freight</span>
+                      <span className="font-mono">{formatCurrency(sale.railwayCharges)}</span>
+                    </div>
+                  )}
+                  {sale.coverRopeCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Cover &amp; Rope</span>
+                      <span className="font-mono">{formatCurrency(sale.coverRopeCharges)}</span>
+                    </div>
+                  )}
+                  {sale.thermocolBoxCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Thermocol Box</span>
+                      <span className="font-mono">{formatCurrency(sale.thermocolBoxCharges)}</span>
+                    </div>
+                  )}
+                  {sale.packingCharges > 0 && (
+                    <div className="flex justify-between text-[10px] text-muted-foreground pl-2">
+                      <span>• Packing Cost</span>
+                      <span className="font-mono">{formatCurrency(sale.packingCharges)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex justify-between text-xs pt-1">
                 <span className="text-muted-foreground">Amount Paid</span>
