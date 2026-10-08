@@ -287,31 +287,49 @@ export async function listSales(
       },
     });
 
-    return sales.map((sale) => ({
-      id: sale.id,
-      saleNumber: sale.saleNumber,
-      customerId: sale.customerId,
-      customerName: sale.customer.companyName
-        ? `${sale.customer.name} (${sale.customer.companyName})`
-        : sale.customer.name,
-      saleDate: sale.saleDate.toISOString(),
-      deliveryDate: sale.deliveryDate?.toISOString() ?? null,
-      status: sale.status,
-      paymentStatus: sale.paymentStatus,
-      subtotal: sale.subtotal,
-      iceCharges: sale.iceCharges ?? 0,
-      railwayCharges: sale.railwayCharges ?? 0,
-      coverRopeCharges: sale.coverRopeCharges ?? 0,
-      thermocolBoxCharges: sale.thermocolBoxCharges ?? 0,
-      packingCharges: sale.packingCharges ?? 0,
-      taxAmount: sale.taxAmount,
-      discountAmount: sale.discountAmount,
-      totalAmount: sale.totalAmount,
-      paidAmount: sale.paidAmount,
-      balanceAmount: sale.balanceAmount,
-      totalWeightKg: sale.items.reduce((sum, item) => sum + item.weightKg, 0),
-      itemsCount: sale.items.length,
-    }));
+    return sales.map((sale) => {
+      const rawCost = sale.items.reduce((sum, item) => {
+        const effectiveKg = Math.max(0, item.weightKg - (item.spoiledWeightKg ?? 0));
+        return sum + effectiveKg * (item.exactPurchasingCost ?? 0);
+      }, 0);
+      const orderExpenses =
+        (sale.iceCharges ?? 0) +
+        (sale.railwayCharges ?? 0) +
+        (sale.coverRopeCharges ?? 0) +
+        (sale.thermocolBoxCharges ?? 0) +
+        (sale.packingCharges ?? 0);
+      const netProfit = Number((sale.totalAmount - rawCost - orderExpenses).toFixed(2));
+      const netProfitMargin =
+        sale.totalAmount > 0 ? Number(((netProfit / sale.totalAmount) * 100).toFixed(1)) : 0;
+
+      return {
+        id: sale.id,
+        saleNumber: sale.saleNumber,
+        customerId: sale.customerId,
+        customerName: sale.customer.companyName
+          ? `${sale.customer.name} (${sale.customer.companyName})`
+          : sale.customer.name,
+        saleDate: sale.saleDate.toISOString(),
+        deliveryDate: sale.deliveryDate?.toISOString() ?? null,
+        status: sale.status,
+        paymentStatus: sale.paymentStatus,
+        subtotal: sale.subtotal,
+        iceCharges: sale.iceCharges ?? 0,
+        railwayCharges: sale.railwayCharges ?? 0,
+        coverRopeCharges: sale.coverRopeCharges ?? 0,
+        thermocolBoxCharges: sale.thermocolBoxCharges ?? 0,
+        packingCharges: sale.packingCharges ?? 0,
+        taxAmount: sale.taxAmount,
+        discountAmount: sale.discountAmount,
+        totalAmount: sale.totalAmount,
+        paidAmount: sale.paidAmount,
+        balanceAmount: sale.balanceAmount,
+        totalWeightKg: sale.items.reduce((sum, item) => sum + item.weightKg, 0),
+        itemsCount: sale.items.length,
+        netProfit,
+        netProfitMargin,
+      };
+    });
   } catch (error) {
     console.error("Failed to fetch sales list:", error);
     return [];
@@ -489,6 +507,69 @@ export async function getSaleById(id: string): Promise<SaleDetailDTO | null> {
         invoiceUrl: e.invoiceUrl,
         invoiceFileName: e.invoiceFileName,
       })),
+      netProfit: Number(
+        (
+          sale.totalAmount -
+          sale.items.reduce(
+            (sum, item) =>
+              sum +
+              Math.max(0, item.weightKg - (item.spoiledWeightKg ?? 0)) *
+                (item.exactPurchasingCost ?? 0),
+            0
+          ) -
+          ((sale.iceCharges ?? 0) +
+            (sale.railwayCharges ?? 0) +
+            (sale.coverRopeCharges ?? 0) +
+            (sale.thermocolBoxCharges ?? 0) +
+            (sale.packingCharges ?? 0) +
+            (sale.expenses || [])
+              .filter(
+                (e) =>
+                  ![
+                    "Ice Cost",
+                    "Railway Freight / Charges",
+                    "Cover & Rope Charges",
+                    "Thermocol Boxes Cost",
+                    "Packing Charges",
+                  ].includes(e.category.name)
+              )
+              .reduce((sum, e) => sum + e.amount, 0))
+        ).toFixed(2)
+      ),
+      netProfitMargin:
+        sale.totalAmount > 0
+          ? Number(
+              (
+                ((sale.totalAmount -
+                  sale.items.reduce(
+                    (sum, item) =>
+                      sum +
+                      Math.max(0, item.weightKg - (item.spoiledWeightKg ?? 0)) *
+                        (item.exactPurchasingCost ?? 0),
+                    0
+                  ) -
+                  ((sale.iceCharges ?? 0) +
+                    (sale.railwayCharges ?? 0) +
+                    (sale.coverRopeCharges ?? 0) +
+                    (sale.thermocolBoxCharges ?? 0) +
+                    (sale.packingCharges ?? 0) +
+                    (sale.expenses || [])
+                      .filter(
+                        (e) =>
+                          ![
+                            "Ice Cost",
+                            "Railway Freight / Charges",
+                            "Cover & Rope Charges",
+                            "Thermocol Boxes Cost",
+                            "Packing Charges",
+                          ].includes(e.category.name)
+                      )
+                      .reduce((sum, e) => sum + e.amount, 0))) /
+                  sale.totalAmount) *
+                100
+              ).toFixed(1)
+            )
+          : 0,
     };
   } catch (error) {
     console.error(`Failed to fetch sale detail for ${id}:`, error);

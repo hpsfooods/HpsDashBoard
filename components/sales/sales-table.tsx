@@ -47,6 +47,28 @@ const SalesTableRow = React.memo(function SalesTableRow({ sale }: SalesTableRowP
       <TableCell className="text-right font-mono text-xs font-semibold text-foreground">
         {formatCurrency(sale.totalAmount)}
       </TableCell>
+      <TableCell className="text-right font-mono text-xs">
+        {sale.netProfit !== undefined ? (
+          <div>
+            <span
+              className={`font-semibold ${
+                sale.netProfit >= 0
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-destructive"
+              }`}
+            >
+              {formatCurrency(sale.netProfit)}
+            </span>
+            {sale.netProfitMargin !== undefined && (
+              <div className="text-[10px] text-muted-foreground font-medium">
+                {sale.netProfitMargin.toFixed(1)}%
+              </div>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </TableCell>
       <TableCell className="text-right font-mono text-xs font-semibold">
         <span
           className={
@@ -108,7 +130,8 @@ export const SalesTable = React.memo(function SalesTable({ sales }: SalesTablePr
                 <TableHead>Date & Time</TableHead>
                 <TableHead className="hidden sm:table-cell text-right">Items</TableHead>
                 <TableHead className="hidden sm:table-cell text-right">Qty (kg)</TableHead>
-                <TableHead className="text-right">Total Amount</TableHead>
+                <TableHead className="text-right">Total Billed</TableHead>
+                <TableHead className="text-right">Net Profit</TableHead>
                 <TableHead className="text-right">Due Amount</TableHead>
                 <TableHead>Payment</TableHead>
                 <TableHead className="hidden md:table-cell">Delivery Status</TableHead>

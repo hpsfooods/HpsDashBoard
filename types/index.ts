@@ -169,6 +169,8 @@ export interface SaleDTO {
   balanceAmount: number;
   totalWeightKg: number;
   itemsCount?: number;
+  netProfit?: number;
+  netProfitMargin?: number;
 }
 
 export interface InventoryTransactionDTO {

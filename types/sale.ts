@@ -135,6 +135,8 @@ export interface SaleDetailDTO {
     invoiceUrl?: string | null;
     invoiceFileName?: string | null;
   }>;
+  netProfit?: number;
+  netProfitMargin?: number;
 }
 
 export interface SaleFilterParams {
