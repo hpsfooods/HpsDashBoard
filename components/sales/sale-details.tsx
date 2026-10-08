@@ -244,6 +244,45 @@ export function SaleDetails({ sale }: SaleDetailsProps) {
     0
   );
 
+  const totalRawProcurementCost = sale.items.reduce((sum, item) => {
+    const effectiveKg =
+      item.effectiveWeightKg ??
+      Math.max(0, item.weightKg - (item.spoiledWeightKg ?? 0));
+    const cost = item.exactPurchasingCost ?? 0;
+    return sum + effectiveKg * cost;
+  }, 0);
+
+  const hasProcurementCosts = sale.items.some(
+    (item) =>
+      item.exactPurchasingCost !== null &&
+      item.exactPurchasingCost !== undefined &&
+      item.exactPurchasingCost > 0
+  );
+
+  const totalOrderDirectExpenses =
+    (sale.iceCharges || 0) +
+    (sale.railwayCharges || 0) +
+    (sale.coverRopeCharges || 0) +
+    (sale.thermocolBoxCharges || 0) +
+    (sale.packingCharges || 0) +
+    (sale.expenses || [])
+      .filter(
+        (e) =>
+          ![
+            "Ice Cost",
+            "Railway Freight / Charges",
+            "Cover & Rope Charges",
+            "Thermocol Boxes Cost",
+            "Packing Charges",
+          ].includes(e.categoryName)
+      )
+      .reduce((sum, e) => sum + e.amount, 0);
+
+  const saleNetProfit =
+    sale.totalAmount - totalRawProcurementCost - totalOrderDirectExpenses;
+  const saleNetProfitMargin =
+    sale.totalAmount > 0 ? (saleNetProfit / sale.totalAmount) * 100 : 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -921,6 +960,65 @@ export function SaleDetails({ sale }: SaleDetailsProps) {
                 >
                   {currentStatus}
                 </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Order Net Profit Realization Card */}
+          <Card className="border-emerald-500/30 bg-emerald-500/5">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center justify-between">
+                <span>Order Net Profit</span>
+                <span
+                  className={`text-xs font-mono font-bold ${
+                    saleNetProfit >= 0
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-destructive"
+                  }`}
+                >
+                  {saleNetProfitMargin.toFixed(1)}% Margin
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Grand Total (Billed)</span>
+                <span className="font-mono font-semibold">
+                  {formatCurrency(sale.totalAmount)}
+                </span>
+              </div>
+              {hasProcurementCosts && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Less: Fish Procurement Cost</span>
+                  <span className="font-mono text-amber-600 dark:text-amber-400">
+                    -{formatCurrency(totalRawProcurementCost)}
+                  </span>
+                </div>
+              )}
+              {totalOrderDirectExpenses > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Less: Order Expenses</span>
+                  <span className="font-mono text-amber-600 dark:text-amber-400">
+                    -{formatCurrency(totalOrderDirectExpenses)}
+                  </span>
+                </div>
+              )}
+              <div className="border-t border-emerald-500/20 pt-2 mt-2">
+                <div className="flex justify-between text-sm font-bold">
+                  <span>Take-Home Net Profit</span>
+                  <span
+                    className={`font-mono ${
+                      saleNetProfit >= 0
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-destructive"
+                    }`}
+                  >
+                    {formatCurrency(saleNetProfit)}
+                  </span>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Net profit calculated as Billed Grand Total minus Fish Procurement Cost minus Order Expenses.
+                </p>
               </div>
             </CardContent>
           </Card>

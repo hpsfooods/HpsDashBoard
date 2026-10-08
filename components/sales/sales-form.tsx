@@ -240,6 +240,19 @@ export function SalesForm({ customers, fishTypes, initialData }: SalesFormProps)
   const totalCharges =
     iceCharges + railwayCharges + coverRopeCharges + thermocolBoxCharges + packingCharges;
   const grandTotal = Math.max(0, subtotal + taxAmount - discountAmount);
+
+  const totalEstimatedCost = calculatedItems.reduce(
+    (sum, item) =>
+      sum + (item.costRate !== null && item.costRate !== undefined ? item.costRate * item.weightKg : 0),
+    0
+  );
+  const hasCostRates = calculatedItems.some(
+    (i) => i.costRate !== null && i.costRate !== undefined && i.costRate > 0
+  );
+  const estimatedOrderNetProfit = grandTotal - totalEstimatedCost - totalCharges;
+  const estimatedOrderNetMargin =
+    grandTotal > 0 ? (estimatedOrderNetProfit / grandTotal) * 100 : 0;
+
   const dueAmount = isEditMode
     ? Math.max(0, grandTotal - (initialData?.paidAmount ?? 0))
     : Math.max(0, grandTotal - initialPaidAmount);
@@ -1132,6 +1145,21 @@ export function SalesForm({ customers, fishTypes, initialData }: SalesFormProps)
                     </span>
                   </div>
                 </>
+              )}
+
+              {hasCostRates && (
+                <div className="mt-3 pt-2 border-t border-emerald-500/20 bg-emerald-500/10 p-2.5 rounded-lg space-y-1">
+                  <div className="flex justify-between text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                    <span>Est. Order Net Profit</span>
+                    <span className="font-mono">{formatCurrency(estimatedOrderNetProfit)}</span>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <span>(Billed Total − Raw Cost − Expenses)</span>
+                    <span className="font-mono font-medium text-foreground">
+                      {estimatedOrderNetMargin.toFixed(1)}% Margin
+                    </span>
+                  </div>
+                </div>
               )}
 
               <div className="pt-2">
